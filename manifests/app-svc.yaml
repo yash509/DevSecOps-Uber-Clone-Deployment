@@ -4,7 +4,7 @@ metadata:
   name: uber-app-service
 spec:
   selector:
-    app: ubera-app
+    app: uber-app
   ports:
     - protocol: TCP
       port: 5000
