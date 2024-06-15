@@ -13,6 +13,7 @@ pipeline {
                 cleanWs()
             }
         }
+        
         stage('Unit Tests') {
             steps {
                 sh 'jenkins --version'
@@ -23,11 +24,13 @@ pipeline {
                 sh 'docker --version'
             }
         }
+        
         stage('Checkout from Git') {                        
             steps {                                       
                 git branch: 'main', url: 'https://github.com/yash509/DevSecOps-Uber-Clone-Deployment.git'
             }
         }
+        
         stage('Deployments') {
             parallel {
                 stage('Test deploy to staging') {
@@ -42,6 +45,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Test Build') {
             steps {
                 echo 'Building....'
@@ -52,6 +56,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy to Staging') {
             when {
                 branch 'main'
@@ -61,10 +66,11 @@ pipeline {
             }
             post {
                 always {
-                    jiraSendDeploymentInfo environmentId: 'us-stg-1', environmentName: 'us-stg-1', environmentType: 'staging'
+                    jiraSendDeploymentInfo environmentId: 'us-stg-1', environmentName: 'us-stg-1', environmentType: 'staging', issueKeys: ['JIRA-1234']
                 }
             }
         }
+        
         stage('Deploy to Production') {
             when {
                 branch 'main'
@@ -74,10 +80,11 @@ pipeline {
             }
             post {
                 always {
-                    jiraSendDeploymentInfo environmentId: 'us-prod-1', environmentName: 'us-prod-1', environmentType: 'production'
+                    jiraSendDeploymentInfo environmentId: 'us-prod-1', environmentName: 'us-prod-1', environmentType: 'production', issueKeys: ['JIRA-1234']
                 }
             }
         }
+        
         stage("Sonarqube Analysis ") {                         
             steps {
                 //dir('Band Website') {
@@ -88,6 +95,7 @@ pipeline {
                 }
             }
         }
+        
         stage("quality gate") {
             steps {
                 //dir('Band Website') {
@@ -97,6 +105,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Install Dependencies') {
             steps {
                 //dir('Band Website') {
@@ -104,6 +113,7 @@ pipeline {
                 //}
             }
         }
+        
         stage('OWASP File System SCAN') {
             steps {
                 //dir('Band Website') {
@@ -112,6 +122,7 @@ pipeline {
                 //}
             }
         }
+        
         stage('TRIVY File System SCAN') {
             steps {
                 //dir('Band Website') {
@@ -119,6 +130,7 @@ pipeline {
                 //}
             }
         }
+        
         stage('Docker Scout Image Overview') {
             steps {
                 script{
@@ -128,6 +140,7 @@ pipeline {
                 }   
             }
         }
+        
         stage('Docker Scout CVES File System Scan') {
             steps {
                 script{
@@ -137,6 +150,7 @@ pipeline {
                 }   
             }
         }
+        
         stage("Docker Image Building"){
             steps{
                 script{
@@ -149,6 +163,7 @@ pipeline {
                 }
             }
         }
+        
         stage("Docker Image Tagging"){
             steps{
                 script{
@@ -160,11 +175,13 @@ pipeline {
                 }
             }
         }
+        
         stage('Docker Image Scanning') { 
             steps { 
                 sh "trivy image --format table -o trivy-image-report.html yash5090/uber-application:latest" 
             } 
         } 
+        
         stage("Image Push to DockerHub") {
             steps{
                 script{
@@ -176,6 +193,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Docker Scout Image Scanning') {
             steps {
                 script{
@@ -188,6 +206,7 @@ pipeline {
                 }   
             }
         }
+        
         stage("TRIVY"){
             steps{
                 //dir('Band Website') {
@@ -195,6 +214,7 @@ pipeline {
                 //}
             }
         }
+        
         stage ('Manual Approval'){
           steps {
            script {
@@ -220,6 +240,7 @@ pipeline {
            }
           }
         }
+        
         stage('Deploy to Docker Container'){
             steps{
                 //dir('BMI Calculator (JS)') {
@@ -227,6 +248,7 @@ pipeline {
                 //}
             }
         }
+        
         stage('Deploy to Kubernetes'){
             steps{
                 script{
@@ -239,6 +261,7 @@ pipeline {
                 }
             }
         }
+        
          stage('Verify the Kubernetes Deployments') { 
             steps { 
                 withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') { 
@@ -255,6 +278,7 @@ pipeline {
             }
         }
     }
+    
     post { 
         always {
             script { 
@@ -289,6 +313,7 @@ pipeline {
         } 
     }
 }
+
 stage('Result') {
         timeout(time: 10, unit: 'MINUTES') {
             mail to: 'clouddevopshunter@gmail.com',
@@ -300,3 +325,31 @@ stage('Result') {
             parameters: [choice(name: 'action', choices: ['Success'], description: 'Approve deployment')]
         }
     }
+    
+stage('Deploy to Staging') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Deploying to Staging from main....'
+            }
+            post {
+                always {
+                    jiraSendDeploymentInfo environmentId: 'us-stg-1', environmentName: 'us-stg-1', environmentType: 'staging', issueKeys: ['JIRA-1234']
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Deploying to Production from main....'
+            }
+            post {
+                always {
+                    jiraSendDeploymentInfo environmentId: 'us-prod-1', environmentName: 'us-prod-1', environmentType: 'production', issueKeys: ['JIRA-1234']
+                }
+            }
+        }
