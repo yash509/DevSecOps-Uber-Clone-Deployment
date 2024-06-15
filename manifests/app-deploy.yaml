@@ -16,4 +16,4 @@ spec:
         - name: uber-app
           image: yash5090/uber-app:latest # Replace with the actual image tag
           ports:
-            - containerPort: 5000 # Replace with the port your Tetris game listens on
+            - containerPort: 3000 # Replace with the port your Tetris game listens on
